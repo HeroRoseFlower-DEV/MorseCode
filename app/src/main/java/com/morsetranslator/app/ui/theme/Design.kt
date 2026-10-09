@@ -210,9 +210,7 @@ fun CalmOutlineChip(
             labelColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
             else MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        border = androidx.compose.material3.AssistChipDefaults.assistChipBorder(
-            borderColor = MaterialTheme.colorScheme.outlineVariant
-        )
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     )
 }
 

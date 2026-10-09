@@ -103,13 +103,17 @@ fun TranslateScreen(
 
     var textToMorse by rememberSaveable { mutableStateOf(true) }
     var input by rememberSaveable { mutableStateOf("") }
-    // Set<Output> is not Bundle-saveable by default; persist as name list.
-    var outputs by rememberSaveable(
-        saver = androidx.compose.runtime.saveable.Saver(
-            save = { state: Set<Output> -> state.map { it.name } },
-            restore = { names: List<String> -> names.map { Output.valueOf(it) }.toSet() }
-        )
-    ) { mutableStateOf(setOf(Output.SOUND)) }
+    // Output is an enum and not Bundle-saveable; persist the selected names
+    // (Set<String> is saveable) and derive the enum set from them.
+    var outputNames by rememberSaveable { mutableStateOf(setOf(Output.SOUND.name)) }
+    val outputs: Set<Output> = remember(outputNames) {
+        outputNames.mapNotNull { runCatching { Output.valueOf(it) }.getOrNull() }.toSet()
+    }
+    fun toggleOutput(output: Output) {
+        outputNames =
+            if (output.name in outputNames) outputNames - output.name
+            else outputNames + output.name
+    }
     var settingsExpanded by rememberSaveable { mutableStateOf(false) }
     var showFlashRationale by remember { mutableStateOf(false) }
 
@@ -455,7 +459,7 @@ fun TranslateScreen(
                     icon = Icons.Filled.VolumeUp,
                     selected = Output.SOUND in outputs,
                     onToggle = {
-                        outputs = outputs.toggle(Output.SOUND)
+                        toggleOutput(Output.SOUND)
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -463,14 +467,14 @@ fun TranslateScreen(
                     label = stringResource(R.string.play_flash),
                     icon = Icons.Filled.FlashlightOn,
                     selected = Output.FLASH in outputs,
-                    onToggle = { outputs = outputs.toggle(Output.FLASH) },
+                    onToggle = { toggleOutput(Output.FLASH) },
                     modifier = Modifier.weight(1f)
                 )
                 OutputChip(
                     label = stringResource(R.string.play_vibrate),
                     icon = Icons.Filled.Vibration,
                     selected = Output.VIBRATION in outputs,
-                    onToggle = { outputs = outputs.toggle(Output.VIBRATION) },
+                    onToggle = { toggleOutput(Output.VIBRATION) },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -654,15 +658,6 @@ fun TranslateScreen(
     }
 }
 
-private fun Set<Output>.toggle(output: Output): Set<Output> {
-    val next = toMutableSet()
-    if (output in next) {
-        if (next.size > 1) next.remove(output) // keep at least one output
-    } else {
-        next.add(output)
-    }
-    return next
-}
 
 @Composable
 private fun OutputChip(

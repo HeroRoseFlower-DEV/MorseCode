@@ -59,7 +59,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
 
         /** Production entry point. Tests inject a DataStore directly. */
         fun create(context: Context): SettingsRepository =
-            SettingsRepository(dataStore)
+            SettingsRepository(context.dataStore)
 
         const val DEFAULT_WPM = 18
         const val DEFAULT_TONE_HZ = 700

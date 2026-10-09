@@ -337,11 +337,17 @@ class MorsePlayer(private val context: Context) {
             var elapsedMs = 0L
             for (event in events) {
                 coroutineContext.ensureActive()
-                when (event) {
-                    is MorsePlan.Event.Signal -> writeTone(event.durationMs)
-                    is MorsePlan.Event.Gap -> writeSilence(event.durationMs)
+                val ms = when (event) {
+                    is MorsePlan.Event.Signal -> {
+                        writeTone(event.durationMs)
+                        event.durationMs
+                    }
+                    is MorsePlan.Event.Gap -> {
+                        writeSilence(event.durationMs)
+                        event.durationMs
+                    }
                 }
-                elapsedMs += event.durationMs
+                elapsedMs += ms
                 reportProgress(elapsedMs)
             }
             flush()
@@ -376,14 +382,20 @@ class MorsePlayer(private val context: Context) {
         try {
             for (event in events) {
                 coroutineContext.ensureActive()
-                when (event) {
-                    is MorsePlan.Event.Signal -> setTorch(cameraId, true)
-                    is MorsePlan.Event.Gap -> setTorch(cameraId, false)
+                val ms = when (event) {
+                    is MorsePlan.Event.Signal -> {
+                        setTorch(cameraId, true)
+                        event.durationMs
+                    }
+                    is MorsePlan.Event.Gap -> {
+                        setTorch(cameraId, false)
+                        event.durationMs
+                    }
                 }
-                nextDeadline += event.durationMs
+                nextDeadline += ms
                 val wait = nextDeadline - SystemClock.elapsedRealtime()
                 if (wait > 0) delay(wait)
-                elapsedMs += event.durationMs
+                elapsedMs += ms
                 reportProgress(elapsedMs)
             }
         } finally {
