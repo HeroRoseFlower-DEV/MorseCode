@@ -28,6 +28,13 @@
     <string name="history_search_hint">جست‌وجو در تاریخچه…</string>
     <string name="action_favorite">علاقه‌مندی</string>
 
+    <string name="learn_play">پخش %1$s</string>
+    <string name="playback_speed_hint">WPM بالاتر یعنی پخش سریع‌تر</string>
+    <string name="tone_hint">فرکانس صدای پخش</string>
+    <string name="theme">پوسته</string>
+    <string name="settings_about">درباره</string>
+    <string name="made_with">ساخته شده با</string>
+
     <string name="mode_text_to_morse">متن به مورس</string>
     <string name="mode_morse_to_text">مورس به متن</string>
 
