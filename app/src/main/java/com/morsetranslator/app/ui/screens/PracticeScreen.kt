@@ -290,9 +290,9 @@ fun PracticeScreen(repository: SettingsRepository, player: MorsePlayer) {
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            if (wasCorrect == null) glassGradientBrush()
-                            else glassContainer()
+                        .then(
+                            if (wasCorrect == null) Modifier.background(glassGradientBrush())
+                            else Modifier.background(glassContainer())
                         )
                         .clickable(enabled = wasCorrect == null) { tapInput += "." }
                         .padding(vertical = 16.dp),
@@ -310,9 +310,9 @@ fun PracticeScreen(repository: SettingsRepository, player: MorsePlayer) {
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            if (wasCorrect == null) glassGradientBrush()
-                            else glassContainer()
+                        .then(
+                            if (wasCorrect == null) Modifier.background(glassGradientBrush())
+                            else Modifier.background(glassContainer())
                         )
                         .clickable(enabled = wasCorrect == null) { tapInput += "-" }
                         .padding(vertical = 16.dp),
