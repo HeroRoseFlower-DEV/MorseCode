@@ -28,6 +28,8 @@
     <string name="history_search_hint">Search history…</string>
     <string name="action_favorite">Favorite</string>
 
+    <string name="profile_international">International</string>
+    <string name="profile_persian">Persian (community convention)</string>
     <string name="learn_play">Play %1$s</string>
     <string name="playback_speed_hint">Higher WPM means faster playback</string>
     <string name="tone_hint">Frequency of the playback tone</string>
@@ -88,4 +90,105 @@
     <string name="copied">Copied to clipboard</string>
     <string name="camera_permission_needed">Camera permission is needed for flashlight signals.</string>
     <string name="no_flash">This device has no flashlight</string>
+    <!-- actions -->
+    <string name="action_back">Back</string>
+    <string name="action_continue">Continue</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_paste">Paste</string>
+
+    <!-- navigation -->
+    <string name="nav_decode">Decode</string>
+
+    <!-- translate -->
+    <string name="translate_explanation">Type text to encode it as Morse, or enter Morse to decode it. Everything works offline on your device.</string>
+    <string name="playback_outputs_label">Playback outputs</string>
+    <string name="playback_settings">Playback settings</string>
+    <string name="play_morse">Play</string>
+    <string name="progress_format">%1$s / %2$s</string>
+    <string name="progress_estimate">About %1$s</string>
+
+    <!-- validation -->
+    <string name="validation_unsupported_title">Unsupported characters: %1$d</string>
+    <string name="validation_unsupported_detail">These are skipped: %1$s</string>
+    <string name="validation_unknown_title">Unknown Morse sequences: %1$d</string>
+    <string name="validation_unknown_detail">Shown as �: %1$s</string>
+    <string name="validation_malformed_title">Unusual separators</string>
+    <string name="validation_malformed_detail">Check for doubled, leading or trailing slashes.</string>
+
+    <!-- daily message -->
+    <string name="daily_title">Daily message</string>
+    <string name="daily_play">Play</string>
+
+    <!-- decode -->
+    <string name="decode_explanation">Hold your phone near the Morse sound source and press Start. The audio is analyzed on this device only.</string>
+    <string name="decode_listening">Listening…</string>
+    <string name="decode_idle">Decoder idle</string>
+    <string name="decode_privacy_note">Microphone audio never leaves this device.</string>
+    <string name="decode_start">Start listening</string>
+    <string name="decode_stop">Stop</string>
+    <string name="decode_mic_unavailable">Could not open the microphone.</string>
+    <string name="decode_results">Live result</string>
+    <string name="decode_morse_label">Detected Morse</string>
+    <string name="decode_text_label">Decoded text</string>
+    <string name="decode_wpm">About %1$d WPM</string>
+    <string name="decode_wpm_unknown">Speed unknown yet</string>
+    <string name="decode_segments">%1$d tones detected</string>
+    <string name="decode_uncertain_note">Live decoding is approximate — verify important messages by ear.</string>
+    <string name="decode_clear">Clear</string>
+    <string name="decode_sensitivity">Sensitivity</string>
+    <string name="decode_sensitivity_hint">Lower it in noisy rooms; raise it for quiet, distant signals.</string>
+    <string name="decode_threshold_value">Threshold: %1$d%%</string>
+
+    <!-- microphone permission -->
+    <string name="mic_rationale_title">Microphone access</string>
+    <string name="mic_rationale_text">The decoder listens for Morse tones through the microphone. Audio is processed on this device only and is never stored or sent anywhere.</string>
+    <string name="mic_permission_needed">Microphone permission is needed to decode audio.</string>
+
+    <!-- flashlight permission -->
+    <string name="flash_rationale_title">Camera access</string>
+    <string name="flash_rationale_text">The flashlight output blinks Morse through the camera flash. The camera itself is never used to take pictures.</string>
+
+    <!-- practice -->
+    <string name="practice_explanation">Train your ear. Answer each round, then review your weakest characters below.</string>
+    <string name="practice_progress_title">My progress</string>
+    <string name="practice_attempts">%1$d attempts</string>
+    <string name="practice_no_data">No answers yet — play a round to start.</string>
+    <string name="practice_accuracy">%1$d%% accuracy · %2$d due for review</string>
+    <string name="practice_weakest">Needs work</string>
+    <string name="practice_weakest_detail">%1$d%% correct · %2$d tries</string>
+    <string name="practice_review_note">Review is local and private: characters you miss come back sooner, ones you know wait longer.</string>
+    <string name="practice_reset_title">Reset progress?</string>
+    <string name="practice_reset_text">This clears your review history for all characters. Your best score is kept.</string>
+    <string name="practice_correct_was">Correct answer: %1$s = %2$s</string>
+
+    <!-- learn -->
+    <string name="learn_explanation">The full reference for the selected alphabet. Tap any row to hear it.</string>
+
+    <!-- history -->
+    <string name="history_explanation">Your recent translations, newest first. Tap an entry to load it back into the translator.</string>
+    <string name="history_export">Export</string>
+
+    <!-- settings -->
+    <string name="settings_alphabet">Alphabet</string>
+    <string name="settings_data">Data &amp; privacy</string>
+    <string name="settings_backup_title">Backup</string>
+    <string name="settings_backup_text">Backups are off: history, settings and progress stay on this device only. Uninstalling the app deletes them.</string>
+
+    <!-- alphabet profiles -->
+    <string name="profile_international_note">ITU international Morse: A–Z, 0–9 and common punctuation.</string>
+    <string name="profile_persian_note">Persian Morse: the 32 Persian letters. A documented community convention — not an official ITU standard.</string>
+
+    <!-- playback outputs -->
+    <string name="output_sound">Sound</string>
+    <string name="output_flash">Flashlight</string>
+    <string name="output_vibration">Vibration</string>
+
+    <!-- playback issues -->
+    <string name="pb_no_signals">Nothing to play — the message has no Morse signals.</string>
+    <string name="pb_no_flash_hw">This device has no camera flash.</string>
+    <string name="pb_flash_denied">Camera permission was denied.</string>
+    <string name="pb_flash_error">The flashlight could not be started.</string>
+    <string name="pb_audio_error">Audio playback failed on this device.</string>
+    <string name="pb_no_vibrator">This device has no vibrator.</string>
+    <string name="pb_vibration_too_long">The vibration pattern is too long for this device.</string>
 </resources>

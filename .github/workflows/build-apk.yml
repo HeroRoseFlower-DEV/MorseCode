@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -19,10 +22,14 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Set up Gradle (with dependency caching)
+        uses: gradle/actions/setup-gradle@v4
+
       # NOTE: do NOT use android-actions/setup-android here — v3 is broken
       # (it tries to install the long-removed "tools" package and fails).
       # The ubuntu-24.04 runner image already ships an Android SDK; we only
-      # need to accept licenses and make sure API 34 packages are present.
+      # need to accept licenses and make sure API 36 packages are present.
+      # (Google Play requires targetSdk 36 for app updates since 2026-08-31.)
       - name: Set up Android SDK packages
         run: |
           set -e
@@ -36,29 +43,46 @@ jobs:
           echo "Using cmdline-tools: $CT"
           export PATH="$CT/bin:$PATH"
           yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
-      - name: Install Gradle
-        run: |
-          set -e
-          GRADLE_VERSION=8.10.2
-          rm -rf "$HOME/gradle-dist" /tmp/gradle.zip
-          curl -sSL --retry 3 --retry-delay 5 \
-            "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" \
-            -o /tmp/gradle.zip
-          test -s /tmp/gradle.zip
-          unzip -q /tmp/gradle.zip -d "$HOME/gradle-dist"
-          echo "$HOME/gradle-dist/gradle-${GRADLE_VERSION}/bin" >> "$GITHUB_PATH"
+      - name: Verify Gradle wrapper
+        run: ./gradlew --version
 
-      - name: Verify Gradle
-        run: gradle --version
+      - name: Run unit tests
+        run: ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
+
+      - name: Run Android lint
+        run: ./gradlew :app:lintDebug --no-daemon --stacktrace
+
+      - name: Compile instrumented UI tests
+        # Compiles androidTest sources; execution needs an emulator.
+        run: ./gradlew :app:assembleAndroidTest --no-daemon --stacktrace
 
       - name: Build debug APK
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
 
-      - name: Upload APK
+      # This is an *unsigned debug* APK built by CI for testing — not a
+      # signed release and not an AAB. Publish to Play via a signed
+      # release build / AAB (see README "Release builds").
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: morse-translator-apk
+          name: morse-translator-2.0-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: app/build/reports/tests/testDebugUnitTest/
+          if-no-files-found: warn
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.html
+          if-no-files-found: warn

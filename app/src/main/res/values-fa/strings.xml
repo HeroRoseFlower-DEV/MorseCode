@@ -28,6 +28,8 @@
     <string name="history_search_hint">جست‌وجو در تاریخچه…</string>
     <string name="action_favorite">علاقه‌مندی</string>
 
+    <string name="profile_international">بین‌المللی</string>
+    <string name="profile_persian">فارسی (قرارداد رایج)</string>
     <string name="learn_play">پخش %1$s</string>
     <string name="playback_speed_hint">WPM بالاتر یعنی پخش سریع‌تر</string>
     <string name="tone_hint">فرکانس صدای پخش</string>
@@ -88,4 +90,105 @@
     <string name="copied">در حافظه کپی شد</string>
     <string name="camera_permission_needed">برای سیگنال فلش به دسترسی دوربین نیازه.</string>
     <string name="no_flash">این دستگاه فلش نداره</string>
+    <!-- actions -->
+    <string name="action_back">برگشت</string>
+    <string name="action_continue">ادامه</string>
+    <string name="action_dismiss">بستن</string>
+    <string name="action_paste">چسباندن</string>
+
+    <!-- navigation -->
+    <string name="nav_decode">دیکد</string>
+
+    <!-- translate -->
+    <string name="translate_explanation">متن را بنویسید تا به مورس تبدیل شود، یا مورس را وارد کنید تا دیکد شود. همه‌چیز آفلاین روی همین دستگاه کار می‌کند.</string>
+    <string name="playback_outputs_label">خروجی‌های پخش</string>
+    <string name="playback_settings">تنظیمات پخش</string>
+    <string name="play_morse">پخش</string>
+    <string name="progress_format">%1$s / %2$s</string>
+    <string name="progress_estimate">حدود %1$s</string>
+
+    <!-- validation -->
+    <string name="validation_unsupported_title">نویسه‌های پشتیبانی‌نشده: %1$d</string>
+    <string name="validation_unsupported_detail">این‌ها نادیده گرفته می‌شوند: %1$s</string>
+    <string name="validation_unknown_title">توالی‌های ناشناخته‌ی مورس: %1$d</string>
+    <string name="validation_unknown_detail">به‌صورت � نمایش داده شدند: %1$s</string>
+    <string name="validation_malformed_title">جداکننده‌های نامعتبر</string>
+    <string name="validation_malformed_detail">اسلش‌های تکراری یا ابتدا و انتهای پیام را بررسی کنید.</string>
+
+    <!-- daily message -->
+    <string name="daily_title">پیام امروز</string>
+    <string name="daily_play">پخش</string>
+
+    <!-- decode -->
+    <string name="decode_explanation">گوشی را نزدیک منبع صدای مورس بگیرید و «شروع» را بزنید. صدا فقط روی همین دستگاه تحلیل می‌شود.</string>
+    <string name="decode_listening">در حال شنیدن…</string>
+    <string name="decode_idle">دیکدر غیرفعال است</string>
+    <string name="decode_privacy_note">صدای میکروفون هرگز از این دستگاه خارج نمی‌شود.</string>
+    <string name="decode_start">شروع شنیدن</string>
+    <string name="decode_stop">توقف</string>
+    <string name="decode_mic_unavailable">میکروفون باز نشد.</string>
+    <string name="decode_results">نتیجه‌ی زنده</string>
+    <string name="decode_morse_label">مورس شناسایی‌شده</string>
+    <string name="decode_text_label">متن دیکدشده</string>
+    <string name="decode_wpm">حدود %1$d WPM</string>
+    <string name="decode_wpm_unknown">سرعت هنوز نامشخص است</string>
+    <string name="decode_segments">%1$d تون شناسایی شد</string>
+    <string name="decode_uncertain_note">دیکد زنده تقریبی است — پیام‌های مهم را با گوش بررسی کنید.</string>
+    <string name="decode_clear">پاک کردن</string>
+    <string name="decode_sensitivity">حساسیت</string>
+    <string name="decode_sensitivity_hint">در محیط پر سر و صدا کمتر، و برای سیگنال‌های ضعیف بیشتر کنید.</string>
+    <string name="decode_threshold_value">آستانه: %1$d٪</string>
+
+    <!-- microphone permission -->
+    <string name="mic_rationale_title">دسترسی به میکروفون</string>
+    <string name="mic_rationale_text">دیکدر از طریق میکروفون به تون‌های مورس گوش می‌دهد. صدا فقط روی همین دستگاه پردازش می‌شود و هرگز ذخیره یا ارسال نمی‌شود.</string>
+    <string name="mic_permission_needed">برای دیکد صدا، دسترسی میکروفون لازم است.</string>
+
+    <!-- flashlight permission -->
+    <string name="flash_rationale_title">دسترسی به دوربین</string>
+    <string name="flash_rationale_text">خروجی چراغ‌قوه، مورس را با فلش دوربین چشمک می‌زند. از خودِ دوربین برای عکس گرفتن استفاده نمی‌شود.</string>
+
+    <!-- practice -->
+    <string name="practice_explanation">گوش‌تان را تمرین دهید. به هر دور پاسخ دهید و نویسه‌های ضعیف‌تان را در پایین ببینید.</string>
+    <string name="practice_progress_title">پیشرفت من</string>
+    <string name="practice_attempts">%1$d تلاش</string>
+    <string name="practice_no_data">هنوز پاسخی ثبت نشده — یک دور بازی کنید.</string>
+    <string name="practice_accuracy">دقت %1$d٪ · %2$d مورد نیاز به مرور</string>
+    <string name="practice_weakest">نیاز به تمرین</string>
+    <string name="practice_weakest_detail">%1$d٪ درست · %2$d تلاش</string>
+    <string name="practice_review_note">مرور محلی و خصوصی است: نویسه‌هایی که اشتباه می‌کنید زودتر برمی‌گردند و آن‌هایی که بلدید دیرتر.</string>
+    <string name="practice_reset_title">پاک شدن پیشرفت؟</string>
+    <string name="practice_reset_text">این کار تاریخچه‌ی مرور همه‌ی نویسه‌ها را پاک می‌کند. بهترین رکورد حفظ می‌شود.</string>
+    <string name="practice_correct_was">پاسخ درست: %1$s برابر %2$s</string>
+
+    <!-- learn -->
+    <string name="learn_explanation">مرجع کامل الفبای انتخاب‌شده. روی هر ردیف بزنید تا بشنوید.</string>
+
+    <!-- history -->
+    <string name="history_explanation">ترجمه‌های اخیر شما، از جدید به قدیم. روی هر مورد بزنید تا در مترجم باز شود.</string>
+    <string name="history_export">خروجی گرفتن</string>
+
+    <!-- settings -->
+    <string name="settings_alphabet">الفبا</string>
+    <string name="settings_data">داده‌ها و حریم خصوصی</string>
+    <string name="settings_backup_title">پشتیبان‌گیری</string>
+    <string name="settings_backup_text">پشتیبان‌گیری خاموش است: تاریخچه، تنظیمات و پیشرفت فقط روی همین دستگاه می‌مانند. با حذف برنامه، پاک می‌شوند.</string>
+
+    <!-- alphabet profiles -->
+    <string name="profile_international_note">مورس بین‌المللی ITU: حروف A تا Z، ارقام ۰ تا ۹ و علائم رایج.</string>
+    <string name="profile_persian_note">مورس فارسی: ۳۲ حرف فارسی. یک قرارداد رایج و مستند است — نه استاندارد رسمی ITU.</string>
+
+    <!-- playback outputs -->
+    <string name="output_sound">صدا</string>
+    <string name="output_flash">چراغ‌قوه</string>
+    <string name="output_vibration">لرزش</string>
+
+    <!-- playback issues -->
+    <string name="pb_no_signals">چیزی برای پخش نیست — پیام هیچ سیگنال مورسی ندارد.</string>
+    <string name="pb_no_flash_hw">این دستگاه فلش دوربین ندارد.</string>
+    <string name="pb_flash_denied">دسترسی دوربین رد شد.</string>
+    <string name="pb_flash_error">چراغ‌قوه روشن نشد.</string>
+    <string name="pb_audio_error">پخش صدا در این دستگاه ناموفق بود.</string>
+    <string name="pb_no_vibrator">این دستگاه ویبره ندارد.</string>
+    <string name="pb_vibration_too_long">الگوی لرزش برای این دستگاه بیش از حد طولانی است.</string>
 </resources>

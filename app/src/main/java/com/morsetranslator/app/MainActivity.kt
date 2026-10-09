@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        repository = SettingsRepository(applicationContext)
+        repository = SettingsRepository.create(applicationContext)
         player = MorsePlayer(applicationContext)
 
         setContent {

@@ -17,7 +17,6 @@ import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -30,42 +29,53 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.morsetranslator.app.R
 import com.morsetranslator.app.data.SettingsRepository
 import com.morsetranslator.app.morse.MorseCode
 import com.morsetranslator.app.morse.MorsePlayer
+import com.morsetranslator.app.morse.Output
 import com.morsetranslator.app.morse.PlaybackSettings
-import com.morsetranslator.app.ui.theme.GlassBottomSpacer
-import com.morsetranslator.app.ui.theme.GlassCard
-import com.morsetranslator.app.ui.theme.GlassIconButton
-import com.morsetranslator.app.ui.theme.glassBorder
-import com.morsetranslator.app.ui.theme.glassContainer
+import com.morsetranslator.app.ui.rememberPlaybackController
+import com.morsetranslator.app.ui.theme.BottomSpacer
+import com.morsetranslator.app.ui.theme.CalmCard
+import com.morsetranslator.app.ui.theme.CalmIconButton
+import com.morsetranslator.app.ui.theme.CalmSegmentedCard
+import com.morsetranslator.app.ui.theme.MorseText
+import com.morsetranslator.app.ui.theme.calmTextFieldColors
+import kotlinx.coroutines.launch
 
-/** Searchable morse reference chart with per-character audio preview. */
+/**
+ * Searchable reference chart. Always shows the *selected alphabet profile's*
+ * table — the same table the encoder/decoder uses, never a different one.
+ * Tap a row (or the speaker) to hear the character.
+ */
 @Composable
 fun LearnScreen(repository: SettingsRepository, player: MorsePlayer) {
     val scope = rememberCoroutineScope()
     var query by remember { mutableStateOf("") }
+    val playback = rememberPlaybackController(player)
 
-    val wpm by repository.wpm.collectAsState(initial = 18)
-    val toneHz by repository.toneHz.collectAsState(initial = 700)
+    val profileId by repository.profileId.collectAsState(initial = MorseCode.INTERNATIONAL.id)
+    val profile = remember(profileId) { MorseCode.profileById(profileId) }
+    val wpm by repository.wpm.collectAsState(initial = SettingsRepository.DEFAULT_WPM)
+    val toneHz by repository.toneHz.collectAsState(initial = SettingsRepository.DEFAULT_TONE_HZ)
 
     DisposableEffect(Unit) {
-        onDispose { player.stop() }
+        onDispose { playback.stop() }
     }
 
-    val entries = remember(query) {
-        val all = MorseCode.CHAR_TO_MORSE.entries.sortedBy { it.key.toString() }
+    val entries = remember(query, profile) {
+        val all = profile.charToMorse.entries.sortedBy { it.key.toString() }
         if (query.isBlank()) all
         else {
-            val q = query.trim().lowercase()
+            val q = query.trim()
+            val qLower = q.lowercase()
             all.filter { (char, morse) ->
-                char.toString().lowercase().contains(q) ||
-                    morse.contains(query.trim()) ||
-                    MorseCode.describe(char)?.lowercase()?.contains(q) == true
+                char.toString().lowercase().contains(qLower) ||
+                    morse.contains(q) ||
+                    MorseCode.describe(char)?.lowercase()?.contains(qLower) == true
             }
         }
     }
@@ -78,6 +88,33 @@ fun LearnScreen(repository: SettingsRepository, player: MorsePlayer) {
     ) {
         Spacer(Modifier.height(4.dp))
 
+        Text(
+            stringResource(R.string.learn_explanation),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
+
+        // Profile switcher — same control as Settings, kept in sync.
+        CalmSegmentedCard(
+            options = MorseCode.PROFILES.map { stringResource(it.nameRes) },
+            selected = MorseCode.PROFILES.indexOfFirst { it.id == profileId }.coerceAtLeast(0),
+            onSelect = { index ->
+                scope.launch {
+                    repository.setProfileId(MorseCode.PROFILES[index].id)
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
+        if (profileId == com.morsetranslator.app.morse.PersianMorse.PROFILE.id) {
+            Text(
+                stringResource(R.string.profile_persian_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+        }
+
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
@@ -85,22 +122,26 @@ fun LearnScreen(repository: SettingsRepository, player: MorsePlayer) {
             placeholder = { Text(stringResource(R.string.learn_search_hint)) },
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
             singleLine = true,
-            shape = RoundedCornerShape(20.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = glassContainer(),
-                unfocusedContainerColor = glassContainer(),
-                disabledContainerColor = glassContainer(),
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = glassBorder()
-            )
+            shape = RoundedCornerShape(12.dp),
+            colors = calmTextFieldColors()
         )
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(entries, key = { it.key }) { (char, morse) ->
-                GlassCard(modifier = Modifier.fillMaxWidth()) {
+                CalmCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        playback.play(
+                            morse = morse,
+                            settings = PlaybackSettings(wpm, toneHz),
+                            outputs = setOf(Output.SOUND),
+                            profile = profile
+                        )
+                    }
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -115,10 +156,9 @@ fun LearnScreen(repository: SettingsRepository, player: MorsePlayer) {
                             modifier = Modifier.padding(start = 4.dp)
                         )
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(
+                            MorseText(
                                 morse,
                                 style = MaterialTheme.typography.titleMedium.copy(
-                                    fontFamily = FontFamily.Monospace,
                                     fontWeight = FontWeight.Bold
                                 )
                             )
@@ -130,22 +170,22 @@ fun LearnScreen(repository: SettingsRepository, player: MorsePlayer) {
                                 )
                             }
                         }
-                        GlassIconButton(
+                        CalmIconButton(
                             icon = Icons.Filled.VolumeUp,
                             description = stringResource(R.string.learn_play, char.toString()),
                             onClick = {
-                                player.playSound(
-                                    scope,
-                                    morse,
-                                    PlaybackSettings(wpm, toneHz)
-                                ) {}
-                            },
-                            size = 48.dp
+                                playback.play(
+                                    morse = morse,
+                                    settings = PlaybackSettings(wpm, toneHz),
+                                    outputs = setOf(Output.SOUND),
+                                    profile = profile
+                                )
+                            }
                         )
                     }
                 }
             }
-            item { GlassBottomSpacer() }
+            item { BottomSpacer() }
         }
     }
 }
