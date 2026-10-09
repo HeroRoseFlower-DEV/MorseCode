@@ -187,7 +187,9 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
                     isFavorite = false
                 )
             )
-            while (current.size > HISTORY_LIMIT) current.removeLast()
+            // removeAt(lastIndex): List.removeLast() is a Java 21 API and
+            // does not exist on the Java 17 runtime used for unit tests.
+            while (current.size > HISTORY_LIMIT) current.removeAt(current.lastIndex)
             prefs[Keys.HISTORY] = historyToJson(current)
         }
     }

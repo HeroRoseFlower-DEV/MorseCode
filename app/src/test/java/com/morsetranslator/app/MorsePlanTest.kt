@@ -139,13 +139,13 @@ class MorsePlanTest {
     }
 
     @Test
-    fun `malformed separators never invent or stack word gaps`() {
-        // "//" is malformed: validation must flag it, and the plan must not
-        // guess a word gap (or stack gaps) for a separator it cannot interpret.
-        val events = MorsePlan.parse("... // ...", 20)
+    fun `repeated separators collapse to a single word gap in the plan`() {
+        // "//" is malformed (validation flags it), but for playback the plan
+        // must not stack word gaps: repeated separators yield exactly one.
+        val events = MorsePlan.parse("... /// ...", 20)
         val gaps = events.filterIsInstance<Event.Gap>()
-        assertTrue(gaps.none { it.durationMs == unit20 * 7 })
-        val validation = MorseCode.validateMorse("... // ...")
+        assertEquals(1, gaps.count { it.durationMs == unit20 * 7 })
+        val validation = MorseCode.validateMorse("... /// ...")
         assertTrue(validation.malformedSeparators)
         assertFalse(validation.isOk)
     }

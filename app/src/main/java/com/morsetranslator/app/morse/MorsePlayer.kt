@@ -458,7 +458,8 @@ class MorsePlayer(private val context: Context) {
                     timings[timings.lastIndex] = timings.last() + event.durationMs
             }
         }
-        if (timings.last() == 0L) timings.removeLast() // no trailing silence
+        // NB: List.removeLast() is a Java 21 API; use removeAt for Java 17.
+        if (timings.last() == 0L) timings.removeAt(timings.lastIndex) // no trailing silence
         val total = timings.sum()
         try {
             vibrator().vibrate(VibrationEffect.createWaveform(timings.toLongArray(), -1))

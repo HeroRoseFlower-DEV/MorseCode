@@ -80,10 +80,17 @@ class MorseCodeTest {
     }
 
     @Test
-    fun `morse whitespace collapses and slashes canonicalize`() {
+    fun `morse whitespace collapses but repeated slashes stay visible`() {
+        // Whitespace collapses and lone slashes canonicalize, but "//" is
+        // NOT folded to "/" — it stays visible so validation can report the
+        // malformed separator instead of silently guessing.
         assertEquals(
-            "... / ---",
+            "... / / ---",
             MorseCode.normalizeMorse("  ...   //   ---  ")
+        )
+        assertEquals(
+            ".- / -...",
+            MorseCode.normalizeMorse("·−/−···")
         )
     }
 
