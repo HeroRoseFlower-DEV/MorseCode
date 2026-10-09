@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">مترجم مورس</string>
+
+    <string name="nav_translate">ترجمه</string>
+    <string name="nav_learn">آموزش</string>
+    <string name="nav_history">تاریخچه</string>
+    <string name="title_settings">تنظیمات</string>
+
+    <string name="mode_text_to_morse">متن به مورس</string>
+    <string name="mode_morse_to_text">مورس به متن</string>
+
+    <string name="input_label_text">متن</string>
+    <string name="input_label_morse">کد مورس</string>
+    <string name="input_hint_text">متن رو بنویس یا بچسبون…</string>
+    <string name="input_hint_morse">کد مورس با . و - بنویس…</string>
+    <string name="invalid_morse">فقط از . و - و / و فاصله استفاده کن.</string>
+
+    <string name="output_label">نتیجه</string>
+    <string name="output_hint">ترجمه اینجا نمایش داده میشه</string>
+
+    <string name="action_copy">کپی</string>
+    <string name="action_share">اشتراک‌گذاری</string>
+    <string name="action_clear">پاک کردن</string>
+    <string name="action_swap">جابه‌جایی</string>
+    <string name="action_stop">توقف</string>
+    <string name="action_cancel">انصراف</string>
+    <string name="action_confirm">تأیید</string>
+
+    <string name="play_sound">پخش صدا</string>
+    <string name="play_flash">فلش</string>
+    <string name="play_vibrate">لرزش</string>
+
+    <string name="wpm">سرعت: %1$d WPM</string>
+    <string name="tone">فرکانس: %1$d هرتز</string>
+    <string name="tap_pad_hint">نگه دار: ضربه سریع = • ، نگه داشتن = ▬</string>
+
+    <string name="learn_search_hint">جست‌وجوی کاراکتر…</string>
+    <string name="group_letters">حروف</string>
+    <string name="group_digits">اعداد</string>
+    <string name="group_punctuation">علائم نگارشی</string>
+
+    <string name="history_empty">هنوز ترجمه‌ای نداری</string>
+    <string name="history_empty_hint">ترجمه‌هات اینجا نمایش داده میشن</string>
+    <string name="history_clear_all">پاک کردن همه</string>
+    <string name="history_delete">حذف</string>
+    <string name="confirm_clear_title">تاریخچه پاک بشه؟</string>
+    <string name="confirm_clear_text">همه‌ی تاریخچه برای همیشه حذف میشه.</string>
+    <string name="dir_text_to_morse">متن←مورس</string>
+    <string name="dir_morse_to_text">مورس←متن</string>
+
+    <string name="settings_appearance">ظاهر</string>
+    <string name="theme_system">سیستم</string>
+    <string name="theme_light">روشن</string>
+    <string name="theme_dark">تیره</string>
+    <string name="settings_playback">پخش</string>
+    <string name="about_text">مترجم کد مورس مینیمال و مدرن با پخش صدا، فلش و لرزش.</string>
+    <string name="version">نسخه‌ی %1$s</string>
+
+    <string name="copied">در حافظه کپی شد</string>
+    <string name="camera_permission_needed">برای سیگنال فلش به دسترسی دوربین نیازه.</string>
+    <string name="no_flash">این دستگاه فلش نداره</string>
+</resources>
