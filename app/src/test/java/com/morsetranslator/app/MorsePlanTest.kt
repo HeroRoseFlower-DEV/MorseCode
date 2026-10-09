@@ -4,6 +4,7 @@ import com.morsetranslator.app.morse.MorseCode
 import com.morsetranslator.app.morse.MorsePlan
 import com.morsetranslator.app.morse.MorsePlan.Event
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
