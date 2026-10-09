@@ -3,9 +3,30 @@
     <string name="app_name">مترجم مورس</string>
 
     <string name="nav_translate">ترجمه</string>
+    <string name="nav_practice">تمرین</string>
     <string name="nav_learn">آموزش</string>
     <string name="nav_history">تاریخچه</string>
     <string name="title_settings">تنظیمات</string>
+
+    <string name="practice_listen">شنیداری</string>
+    <string name="practice_tap">ضربه‌ای</string>
+    <string name="practice_score">امتیاز</string>
+    <string name="practice_streak">پیاپی</string>
+    <string name="practice_best">بهترین</string>
+    <string name="practice_listen_hint">گوش کن و کاراکتر رو حدس بزن</string>
+    <string name="practice_tap_hint">کد مورس این کاراکتر رو بزن</string>
+    <string name="practice_replay">پخش دوباره</string>
+    <string name="practice_check">بررسی</string>
+    <string name="action_reset">از اول</string>
+
+    <string name="presets_label">عبارت‌های آماده</string>
+    <string name="play_all">همه</string>
+    <string name="stats_format">%1$d کاراکتر • %2$d کلمه • ~%3$s</string>
+    <string name="wpm_slow">آهسته</string>
+    <string name="wpm_normal">معمولی</string>
+    <string name="wpm_fast">سریع</string>
+    <string name="history_search_hint">جست‌وجو در تاریخچه…</string>
+    <string name="action_favorite">علاقه‌مندی</string>
 
     <string name="mode_text_to_morse">متن به مورس</string>
     <string name="mode_morse_to_text">مورس به متن</string>

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +32,7 @@ import com.morsetranslator.app.data.SettingsRepository
 import com.morsetranslator.app.morse.MorsePlayer
 import com.morsetranslator.app.ui.screens.HistoryScreen
 import com.morsetranslator.app.ui.screens.LearnScreen
+import com.morsetranslator.app.ui.screens.PracticeScreen
 import com.morsetranslator.app.ui.screens.SettingsScreen
 import com.morsetranslator.app.ui.screens.TranslateScreen
 
@@ -45,6 +47,7 @@ fun AppNav(repository: SettingsRepository, player: MorsePlayer) {
     val navController = rememberNavController()
     val destinations = listOf(
         Destination("translate", R.string.nav_translate, Icons.Filled.Translate),
+        Destination("practice", R.string.nav_practice, Icons.Filled.Quiz),
         Destination("learn", R.string.nav_learn, Icons.Filled.MenuBook),
         Destination("history", R.string.nav_history, Icons.Filled.History)
     )
@@ -53,6 +56,7 @@ fun AppNav(repository: SettingsRepository, player: MorsePlayer) {
     var pendingPrefill by remember { mutableStateOf<Prefill?>(null) }
 
     val titleRes = when (currentRoute) {
+        "practice" -> R.string.nav_practice
         "learn" -> R.string.nav_learn
         "history" -> R.string.nav_history
         "settings" -> R.string.title_settings
@@ -113,6 +117,9 @@ fun AppNav(repository: SettingsRepository, player: MorsePlayer) {
                     prefill = pendingPrefill,
                     onPrefillConsumed = { pendingPrefill = null }
                 )
+            }
+            composable("practice") {
+                PracticeScreen(repository = repository, player = player)
             }
             composable("learn") {
                 LearnScreen(repository = repository, player = player)

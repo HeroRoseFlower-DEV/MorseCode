@@ -15,6 +15,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,7 +26,7 @@ import kotlin.math.sin
 data class PlaybackSettings(val wpm: Int, val toneHz: Int)
 
 /**
- * Plays morse code as sound, camera flash or vibration.
+ * Plays morse code as sound, camera flash, vibration — or all three at once.
  *
  * Only one playback runs at a time; starting a new one stops the previous.
  * All methods are safe to call from the main thread.
@@ -48,7 +49,7 @@ class MorsePlayer(private val context: Context) {
     fun hasFlash(): Boolean =
         context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)
 
-    // ------------------------------------------------------------------ sound
+    // ------------------------------------------------------------ public API
 
     fun playSound(
         scope: CoroutineScope,
@@ -59,15 +60,82 @@ class MorsePlayer(private val context: Context) {
         stop()
         job = scope.launch(Dispatchers.Default) {
             try {
-                val sampleRate = 22050
-                val pcm = buildPcm(morse.take(maxSymbols), settings, sampleRate)
-                if (pcm.isNotEmpty()) playPcm(pcm, sampleRate)
+                runSound(morse, settings)
             } catch (_: CancellationException) {
                 // stopped by user
             } finally {
                 withContext(Dispatchers.Main) { onFinished() }
             }
         }
+    }
+
+    fun playFlash(
+        scope: CoroutineScope,
+        morse: String,
+        settings: PlaybackSettings,
+        onFinished: () -> Unit
+    ) {
+        stop()
+        job = scope.launch(Dispatchers.Default) {
+            try {
+                runFlash(morse, settings)
+            } catch (_: CancellationException) {
+                // stopped by user
+            } finally {
+                withContext(Dispatchers.Main) { onFinished() }
+            }
+        }
+    }
+
+    fun playVibration(
+        scope: CoroutineScope,
+        morse: String,
+        settings: PlaybackSettings,
+        onFinished: () -> Unit
+    ) {
+        stop()
+        job = scope.launch(Dispatchers.Default) {
+            try {
+                runVibration(morse, settings)
+            } catch (_: CancellationException) {
+                // stopped by user
+            } finally {
+                withContext(Dispatchers.Main) { onFinished() }
+            }
+        }
+    }
+
+    /** Play sound, flashlight and vibration simultaneously. */
+    fun playCombined(
+        scope: CoroutineScope,
+        morse: String,
+        settings: PlaybackSettings,
+        onFinished: () -> Unit
+    ) {
+        stop()
+        job = scope.launch(Dispatchers.Default) {
+            try {
+                coroutineScope {
+                    launch { runSound(morse, settings) }
+                    launch { runFlash(morse, settings) }
+                    launch { runVibration(morse, settings) }
+                }
+            } catch (_: CancellationException) {
+                // stopped by user
+            } finally {
+                setTorchOff()
+                vibrator().cancel()
+                withContext(Dispatchers.Main) { onFinished() }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ sound
+
+    private suspend fun runSound(morse: String, settings: PlaybackSettings) {
+        val sampleRate = 22050
+        val pcm = buildPcm(morse.take(maxSymbols), settings, sampleRate)
+        if (pcm.isNotEmpty()) playPcm(pcm, sampleRate)
     }
 
     /** Render the whole message to 16-bit PCM: tone for dits/dahs, silence for gaps. */
@@ -128,31 +196,20 @@ class MorsePlayer(private val context: Context) {
 
     // -------------------------------------------------------------- flashlight
 
-    fun playFlash(
-        scope: CoroutineScope,
-        morse: String,
-        settings: PlaybackSettings,
-        onFinished: () -> Unit
-    ) {
-        stop()
-        val cameraId = findFlashCameraId() ?: run { onFinished(); return }
-        job = scope.launch(Dispatchers.Default) {
-            val ditMs = MorseCode.ditDurationMs(settings.wpm).toLong()
-            try {
-                for (c in morse.take(maxSymbols)) {
-                    when (c) {
-                        '.' -> { setTorch(cameraId, true); delay(ditMs); setTorch(cameraId, false); delay(ditMs) }
-                        '-' -> { setTorch(cameraId, true); delay(ditMs * 3); setTorch(cameraId, false); delay(ditMs) }
-                        ' ' -> delay(ditMs * 2)
-                        '/' -> delay(ditMs * 6)
-                    }
+    private suspend fun runFlash(morse: String, settings: PlaybackSettings) {
+        val cameraId = findFlashCameraId() ?: return
+        val ditMs = MorseCode.ditDurationMs(settings.wpm).toLong()
+        try {
+            for (c in morse.take(maxSymbols)) {
+                when (c) {
+                    '.' -> { setTorch(cameraId, true); delay(ditMs); setTorch(cameraId, false); delay(ditMs) }
+                    '-' -> { setTorch(cameraId, true); delay(ditMs * 3); setTorch(cameraId, false); delay(ditMs) }
+                    ' ' -> delay(ditMs * 2)
+                    '/' -> delay(ditMs * 6)
                 }
-            } catch (_: CancellationException) {
-                // stopped by user
-            } finally {
-                setTorch(cameraId, false)
-                withContext(Dispatchers.Main) { onFinished() }
             }
+        } finally {
+            setTorch(cameraId, false)
         }
     }
 
@@ -183,35 +240,24 @@ class MorsePlayer(private val context: Context) {
 
     // -------------------------------------------------------------- vibration
 
-    fun playVibration(
-        scope: CoroutineScope,
-        morse: String,
-        settings: PlaybackSettings,
-        onFinished: () -> Unit
-    ) {
-        stop()
-        job = scope.launch(Dispatchers.Default) {
-            try {
-                val ditMs = MorseCode.ditDurationMs(settings.wpm).toLong()
-                // Waveform pattern: [initial delay, on, off, on, off, ...]
-                val timings = mutableListOf(0L)
-                for (c in morse.take(maxSymbols)) {
-                    when (c) {
-                        '.' -> { timings.add(ditMs); timings.add(ditMs) }
-                        '-' -> { timings.add(ditMs * 3); timings.add(ditMs) }
-                        ' ' -> timings[timings.lastIndex] = timings.last() + ditMs * 2
-                        '/' -> timings[timings.lastIndex] = timings.last() + ditMs * 6
-                    }
+    private suspend fun runVibration(morse: String, settings: PlaybackSettings) {
+        val ditMs = MorseCode.ditDurationMs(settings.wpm).toLong()
+        try {
+            // Waveform pattern: [initial delay, on, off, on, off, ...]
+            val timings = mutableListOf(0L)
+            for (c in morse.take(maxSymbols)) {
+                when (c) {
+                    '.' -> { timings.add(ditMs); timings.add(ditMs) }
+                    '-' -> { timings.add(ditMs * 3); timings.add(ditMs) }
+                    ' ' -> timings[timings.lastIndex] = timings.last() + ditMs * 2
+                    '/' -> timings[timings.lastIndex] = timings.last() + ditMs * 6
                 }
-                val total = timings.sum()
-                vibrator().vibrate(VibrationEffect.createWaveform(timings.toLongArray(), -1))
-                delay(total + 300)
-            } catch (_: CancellationException) {
-                // stopped by user
-            } finally {
-                vibrator().cancel()
-                withContext(Dispatchers.Main) { onFinished() }
             }
+            val total = timings.sum()
+            vibrator().vibrate(VibrationEffect.createWaveform(timings.toLongArray(), -1))
+            delay(total + 300)
+        } finally {
+            vibrator().cancel()
         }
     }
 

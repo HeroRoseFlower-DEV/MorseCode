@@ -17,10 +17,11 @@ data class HistoryItem(
     val input: String,
     val output: String,
     val textToMorse: Boolean,
-    val timestamp: Long
+    val timestamp: Long,
+    val isFavorite: Boolean = false
 )
 
-/** App settings + translation history, persisted with DataStore Preferences. */
+/** App settings, translation history and practice stats, persisted with DataStore Preferences. */
 class SettingsRepository(private val context: Context) {
 
     private object Keys {
@@ -28,11 +29,13 @@ class SettingsRepository(private val context: Context) {
         val TONE_HZ = intPreferencesKey("tone_hz")
         val THEME_MODE = intPreferencesKey("theme_mode") // 0 = system, 1 = light, 2 = dark
         val HISTORY = stringPreferencesKey("history_json")
+        val PRACTICE_BEST = intPreferencesKey("practice_best")
     }
 
     val wpm: Flow<Int> = context.dataStore.data.map { it[Keys.WPM] ?: 18 }
     val toneHz: Flow<Int> = context.dataStore.data.map { it[Keys.TONE_HZ] ?: 700 }
     val themeMode: Flow<Int> = context.dataStore.data.map { it[Keys.THEME_MODE] ?: 0 }
+    val practiceBest: Flow<Int> = context.dataStore.data.map { it[Keys.PRACTICE_BEST] ?: 0 }
 
     suspend fun setWpm(value: Int) {
         context.dataStore.edit { it[Keys.WPM] = value.coerceIn(5, 40) }
@@ -44,6 +47,13 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setThemeMode(value: Int) {
         context.dataStore.edit { it[Keys.THEME_MODE] = value.coerceIn(0, 2) }
+    }
+
+    suspend fun setPracticeBest(value: Int) {
+        context.dataStore.edit { prefs ->
+            val current = prefs[Keys.PRACTICE_BEST] ?: 0
+            if (value > current) prefs[Keys.PRACTICE_BEST] = value
+        }
     }
 
     // --------------------------------------------------------------- history
@@ -63,10 +73,11 @@ class SettingsRepository(private val context: Context) {
                     input = input,
                     output = output,
                     textToMorse = textToMorse,
-                    timestamp = System.currentTimeMillis()
+                    timestamp = System.currentTimeMillis(),
+                    isFavorite = false
                 )
             )
-            while (current.size > 50) current.removeLast()
+            while (current.size > 100) current.removeLast()
             prefs[Keys.HISTORY] = toJson(current)
         }
     }
@@ -74,6 +85,15 @@ class SettingsRepository(private val context: Context) {
     suspend fun removeHistory(id: Long) {
         context.dataStore.edit { prefs ->
             val current = parseHistory(prefs[Keys.HISTORY].orEmpty()).filterNot { it.id == id }
+            prefs[Keys.HISTORY] = toJson(current)
+        }
+    }
+
+    suspend fun toggleFavorite(id: Long) {
+        context.dataStore.edit { prefs ->
+            val current = parseHistory(prefs[Keys.HISTORY].orEmpty()).map {
+                if (it.id == id) it.copy(isFavorite = !it.isFavorite) else it
+            }
             prefs[Keys.HISTORY] = toJson(current)
         }
     }
@@ -93,7 +113,8 @@ class SettingsRepository(private val context: Context) {
                     input = o.getString("input"),
                     output = o.getString("output"),
                     textToMorse = o.getBoolean("t2m"),
-                    timestamp = o.getLong("ts")
+                    timestamp = o.getLong("ts"),
+                    isFavorite = o.optBoolean("fav", false)
                 )
             }
         } catch (_: Exception) {
@@ -111,6 +132,7 @@ class SettingsRepository(private val context: Context) {
                     put("output", h.output)
                     put("t2m", h.textToMorse)
                     put("ts", h.timestamp)
+                    put("fav", h.isFavorite)
                 }
             )
         }

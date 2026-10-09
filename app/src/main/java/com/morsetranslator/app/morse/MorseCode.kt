@@ -64,4 +64,40 @@ object MorseCode {
 
     /** Duration of one "dit" in milliseconds for the given speed (PARIS standard). */
     fun ditDurationMs(wpm: Int): Int = (1200 / wpm.coerceIn(5, 60)).coerceAtLeast(20)
+
+    /** Built-in quick phrases for one-tap sending. */
+    val PRESETS: Map<String, String> = linkedMapOf(
+        "SOS" to "SOS",
+        "HELP" to "HELP",
+        "YES" to "YES",
+        "NO" to "NO",
+        "OK" to "OK",
+        "I LOVE YOU" to "I LOVE YOU",
+        "GOOD LUCK" to "GOOD LUCK"
+    )
+
+    /**
+     * Estimated playback duration of a morse string at the given speed,
+     * following standard timing (dit=1, dah=3, letter gap=3, word gap=7).
+     */
+    fun estimatedDurationMs(morse: String, wpm: Int): Long {
+        val dit = ditDurationMs(wpm).toLong()
+        var total = 0L
+        for (c in morse) {
+            total += when (c) {
+                '.' -> dit * 2      // tone + intra-letter gap
+                '-' -> dit * 4      // 3x tone + intra-letter gap
+                ' ' -> dit * 2      // +1 dit already counted = letter gap (3)
+                '/' -> dit * 6      // +1 dit already counted = word gap (7)
+                else -> 0L
+            }
+        }
+        return total
+    }
+
+    /** Human-readable duration, e.g. "8s" or "1m 05s". */
+    fun formatDuration(ms: Long): String {
+        val s = (ms + 500) / 1000
+        return if (s < 60) "${s}s" else "${s / 60}m %02d".format(s % 60)
+    }
 }

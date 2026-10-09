@@ -126,7 +126,7 @@ fun SettingsScreen(repository: SettingsRepository) {
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        stringResource(R.string.version, "1.0.0"),
+                        stringResource(R.string.version, "1.1"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

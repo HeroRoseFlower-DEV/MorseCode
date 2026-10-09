@@ -4,15 +4,24 @@ A minimal, modern Android Morse code translator built with Kotlin and Jetpack Co
 
 ## Features
 
-- **Bidirectional translation** — Text ⇄ Morse code, translated live as you type
+- **Bidirectional translation** — Text ⇄ Morse code, translated live as you type, with live stats
+  (character/word count and estimated transmission time)
 - **Sound playback** — precise sine-wave audio with adjustable speed (5–40 WPM) and tone frequency (300–1200 Hz)
 - **Flashlight signals** — blink morse via the camera flash (runtime permission handled)
 - **Vibration playback** — feel the code with accurate timing
+- **Combined playback** — sound, flashlight and vibration at the same time
 - **Tap pad** — hold-to-input: quick tap = dot, long hold = dash, plus dot/dash/space buttons
+- **Quick phrases** — one-tap presets (SOS, HELP, YES, NO, OK, I LOVE YOU, GOOD LUCK)
+- **Practice mode** — interactive quiz: *Listen* (identify the code by ear) and *Tap it*
+  (tap the code for a character), with score, streak and persistent best score
 - **Learn screen** — searchable reference chart of every character with audio preview
-- **History** — last 50 translations, tap to reload, swipe-free delete, clear-all with confirmation
+- **History** — last 100 translations with full-text search and favorites, tap to reload,
+  delete, clear-all with confirmation
 - **Theming** — Material 3 dynamic colors, light / dark / system modes, full RTL support
 - **Bilingual UI** — English and Persian (فارسی)
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and [PRIVACY_POLICY.md](PRIVACY_POLICY.md)
+for the privacy policy (the app works fully offline and collects no data).
 
 ## Getting the APK (no Android Studio needed)
 

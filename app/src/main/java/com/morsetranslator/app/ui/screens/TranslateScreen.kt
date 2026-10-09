@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,12 +26,14 @@ import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.FlashlightOn
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedCard
@@ -109,6 +112,21 @@ fun TranslateScreen(
     val morseValid = remember(input, textToMorse) {
         textToMorse || input.isBlank() || MorseCode.isValidMorse(MorseCode.normalize(input))
     }
+    val morseForStats = remember(input, output, textToMorse) {
+        if (textToMorse) output else MorseCode.normalize(input)
+    }
+    val statsText = remember(input, output, textToMorse, wpm) {
+        if (output.isBlank()) null
+        else {
+            val chars = if (textToMorse) input.length else output.length
+            val source = if (textToMorse) input else output
+            val words = source.trim().split(Regex("\\s+")).count { it.isNotEmpty() }
+            val duration = MorseCode.formatDuration(
+                MorseCode.estimatedDurationMs(morseForStats, wpm)
+            )
+            Triple(chars, words, duration)
+        }
+    }
 
     fun toast(msg: String) =
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
@@ -117,7 +135,7 @@ fun TranslateScreen(
         scope.launch { repository.addHistory(input, output, textToMorse) }
     }
 
-    /** kind: 0 = sound, 1 = flash, 2 = vibration. Toggles stop when already playing. */
+    /** kind: 0 = sound, 1 = flash, 2 = vibration, 3 = all combined. Toggles stop when playing. */
     fun startPlayback(kind: Int) {
         if (output.isBlank()) return
         if (isPlaying) {
@@ -133,6 +151,7 @@ fun TranslateScreen(
             0 -> player.playSound(scope, output, settings, done)
             1 -> player.playFlash(scope, output, settings, done)
             2 -> player.playVibration(scope, output, settings, done)
+            else -> player.playCombined(scope, output, settings, done)
         }
     }
 
@@ -181,6 +200,30 @@ fun TranslateScreen(
                 label = { Text(stringResource(R.string.mode_morse_to_text)) },
                 modifier = Modifier.weight(1f)
             )
+        }
+
+        // Quick phrases (text mode only)
+        if (textToMorse) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    stringResource(R.string.presets_label),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    MorseCode.PRESETS.forEach { (name, text) ->
+                        AssistChip(
+                            onClick = { input = text },
+                            label = { Text(name) }
+                        )
+                    }
+                }
+            }
         }
 
         // Input field
@@ -282,7 +325,7 @@ fun TranslateScreen(
             }
         }
 
-        // Output card
+        // Output card with live stats
         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -303,6 +346,13 @@ fun TranslateScreen(
                         else MaterialTheme.colorScheme.onSurface
                     )
                 }
+                statsText?.let { (chars, words, duration) ->
+                    Text(
+                        stringResource(R.string.stats_format, chars, words, duration),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
 
@@ -310,7 +360,7 @@ fun TranslateScreen(
         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -335,6 +385,12 @@ fun TranslateScreen(
                         enabled = output.isNotBlank() && !isPlaying,
                         onClick = { startPlayback(2) }
                     )
+                    PlaybackButton(
+                        icon = Icons.Filled.GraphicEq,
+                        labelRes = R.string.play_all,
+                        enabled = output.isNotBlank() && !isPlaying,
+                        onClick = { startPlayback(3) }
+                    )
                     if (isPlaying) {
                         FilledIconButton(
                             onClick = {
@@ -347,6 +403,23 @@ fun TranslateScreen(
                                 contentDescription = stringResource(R.string.action_stop)
                             )
                         }
+                    }
+                }
+                // WPM presets
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    listOf(
+                        R.string.wpm_slow to 10,
+                        R.string.wpm_normal to 18,
+                        R.string.wpm_fast to 30
+                    ).forEach { (labelRes, value) ->
+                        FilterChip(
+                            selected = wpm == value,
+                            onClick = { scope.launch { repository.setWpm(value) } },
+                            label = { Text(stringResource(labelRes)) }
+                        )
                     }
                 }
                 Row(

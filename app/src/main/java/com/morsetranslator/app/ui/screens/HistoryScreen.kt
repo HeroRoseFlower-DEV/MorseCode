@@ -17,12 +17,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -52,6 +56,15 @@ fun HistoryScreen(
     val scope = rememberCoroutineScope()
     val history by repository.history.collectAsState(initial = emptyList())
     var showConfirm by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+
+    val filtered = remember(history, query) {
+        if (query.isBlank()) history
+        else history.filter {
+            it.input.contains(query, ignoreCase = true) ||
+                it.output.contains(query, ignoreCase = true)
+        }
+    }
 
     if (showConfirm) {
         AlertDialog(
@@ -79,8 +92,18 @@ fun HistoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(stringResource(R.string.history_search_hint)) },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+            singleLine = true
+        )
+
         if (history.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -93,7 +116,8 @@ fun HistoryScreen(
                 }
             }
         }
-        if (history.isEmpty()) {
+
+        if (filtered.isEmpty()) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -121,7 +145,7 @@ fun HistoryScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(history, key = { it.id }) { item ->
+                items(filtered, key = { it.id }) { item ->
                     ElevatedCard(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -176,6 +200,16 @@ fun HistoryScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontFamily = if (item.textToMorse) FontFamily.Monospace
                                     else FontFamily.Default
+                                )
+                            }
+                            IconButton(
+                                onClick = { scope.launch { repository.toggleFavorite(item.id) } }
+                            ) {
+                                Icon(
+                                    if (item.isFavorite) Icons.Filled.Star else Icons.Outlined.Star,
+                                    contentDescription = stringResource(R.string.action_favorite),
+                                    tint = if (item.isFavorite) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                             IconButton(
