@@ -49,24 +49,7 @@ jobs:
         run: ./gradlew --version
 
       - name: Run unit tests
-        run: |
-          set +e
-          ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace > gradle-test.log 2>&1
-          code=$?
-          echo "Gradle exit code: $code"
-          echo "### Failing output (tail)" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          grep -A 30 "What went wrong" gradle-test.log | head -60 >> "$GITHUB_STEP_SUMMARY" || true
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          exit $code
-
-      - name: Upload Gradle log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gradle-test-log
-          path: gradle-test.log
-          if-no-files-found: warn
+        run: ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
 
       - name: Run Android lint
         run: ./gradlew :app:lintDebug --no-daemon --stacktrace
