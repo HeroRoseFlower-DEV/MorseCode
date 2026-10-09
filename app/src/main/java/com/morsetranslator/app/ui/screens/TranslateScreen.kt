@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -28,24 +29,17 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.FlashlightOn
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.filled.VolumeUp
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -59,13 +53,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.morsetranslator.app.R
@@ -74,6 +68,15 @@ import com.morsetranslator.app.morse.MorseCode
 import com.morsetranslator.app.morse.MorsePlayer
 import com.morsetranslator.app.morse.PlaybackSettings
 import com.morsetranslator.app.ui.Prefill
+import com.morsetranslator.app.ui.theme.GlassBottomSpacer
+import com.morsetranslator.app.ui.theme.GlassCard
+import com.morsetranslator.app.ui.theme.GlassChip
+import com.morsetranslator.app.ui.theme.GlassIconButton
+import com.morsetranslator.app.ui.theme.GlassPrimaryButton
+import com.morsetranslator.app.ui.theme.GlassSegmentedControl
+import com.morsetranslator.app.ui.theme.SectionTitle
+import com.morsetranslator.app.ui.theme.glassBorder
+import com.morsetranslator.app.ui.theme.glassContainer
 import kotlinx.coroutines.launch
 
 @Composable
@@ -180,36 +183,26 @@ fun TranslateScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // Direction selector
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FilterChip(
-                selected = textToMorse,
-                onClick = { textToMorse = true },
-                label = { Text(stringResource(R.string.mode_text_to_morse)) },
-                modifier = Modifier.weight(1f)
-            )
-            FilterChip(
-                selected = !textToMorse,
-                onClick = { textToMorse = false },
-                label = { Text(stringResource(R.string.mode_morse_to_text)) },
-                modifier = Modifier.weight(1f)
-            )
-        }
+        Spacer(Modifier.height(4.dp))
+
+        // Direction selector — glass segmented control
+        GlassSegmentedControl(
+            options = listOf(
+                stringResource(R.string.mode_text_to_morse),
+                stringResource(R.string.mode_morse_to_text)
+            ),
+            selected = if (textToMorse) 0 else 1,
+            onSelect = { textToMorse = it == 0 },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         // Quick phrases (text mode only)
         if (textToMorse) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    stringResource(R.string.presets_label),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                SectionTitle(stringResource(R.string.presets_label))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -217,16 +210,13 @@ fun TranslateScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     MorseCode.PRESETS.forEach { (name, text) ->
-                        AssistChip(
-                            onClick = { input = text },
-                            label = { Text(name) }
-                        )
+                        GlassChip(text = name, onClick = { input = text })
                     }
                 }
             }
         }
 
-        // Input field
+        // Input field — frosted glass
         OutlinedTextField(
             value = input,
             onValueChange = { input = it },
@@ -260,7 +250,15 @@ fun TranslateScreen(
                         )
                     }
                 }
-            }
+            },
+            shape = RoundedCornerShape(20.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = glassContainer(),
+                unfocusedContainerColor = glassContainer(),
+                disabledContainerColor = glassContainer(),
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = glassBorder()
+            )
         )
 
         // Morse helper pad (only in morse-input mode)
@@ -278,10 +276,12 @@ fun TranslateScreen(
         // Swap / copy / share
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedButton(
+            GlassPrimaryButton(
+                text = stringResource(R.string.action_swap),
+                icon = Icons.Filled.SwapVert,
                 onClick = {
                     if (output.isNotBlank()) {
                         input = output
@@ -289,25 +289,22 @@ fun TranslateScreen(
                     }
                 },
                 modifier = Modifier.weight(1f)
-            ) {
-                Icon(Icons.Filled.SwapVert, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.action_swap))
-            }
-            IconButton(
+            )
+            GlassIconButton(
+                icon = Icons.Filled.ContentCopy,
+                description = stringResource(R.string.action_copy),
+                enabled = output.isNotBlank(),
                 onClick = {
                     clipboard.setText(AnnotatedString(output))
                     toast(context.getString(R.string.copied))
                     saveHistory()
                 },
-                enabled = output.isNotBlank()
-            ) {
-                Icon(
-                    Icons.Filled.ContentCopy,
-                    contentDescription = stringResource(R.string.action_copy)
-                )
-            }
-            IconButton(
+                size = 52.dp
+            )
+            GlassIconButton(
+                icon = Icons.Filled.Share,
+                description = stringResource(R.string.action_share),
+                enabled = output.isNotBlank(),
                 onClick = {
                     val send = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
@@ -316,149 +313,148 @@ fun TranslateScreen(
                     context.startActivity(Intent.createChooser(send, null))
                     saveHistory()
                 },
-                enabled = output.isNotBlank()
-            ) {
-                Icon(
-                    Icons.Filled.Share,
-                    contentDescription = stringResource(R.string.action_share)
-                )
-            }
+                size = 52.dp
+            )
         }
 
         // Output card with live stats
-        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+        GlassCard(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                stringResource(R.string.output_label),
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(Modifier.height(8.dp))
+            SelectionContainer {
                 Text(
-                    stringResource(R.string.output_label),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    text = output.ifBlank { stringResource(R.string.output_hint) },
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontFamily = if (textToMorse) FontFamily.Monospace else FontFamily.Default
+                    ),
+                    color = if (output.isBlank()) MaterialTheme.colorScheme.onSurfaceVariant
+                    else MaterialTheme.colorScheme.onSurface
                 )
-                SelectionContainer {
-                    Text(
-                        text = output.ifBlank { stringResource(R.string.output_hint) },
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontFamily = if (textToMorse) FontFamily.Monospace else FontFamily.Default
-                        ),
-                        color = if (output.isBlank()) MaterialTheme.colorScheme.onSurfaceVariant
-                        else MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                statsText?.let { (chars, words, duration) ->
-                    Text(
-                        stringResource(R.string.stats_format, chars, words, duration),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            }
+            statsText?.let { (chars, words, duration) ->
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    stringResource(R.string.stats_format, chars, words, duration),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
 
         // Playback card
-        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+        GlassCard(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Top
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    PlaybackButton(
-                        icon = Icons.Filled.VolumeUp,
-                        labelRes = R.string.play_sound,
-                        enabled = output.isNotBlank() && !isPlaying,
-                        onClick = { startPlayback(0) }
-                    )
-                    PlaybackButton(
-                        icon = Icons.Filled.FlashlightOn,
-                        labelRes = R.string.play_flash,
-                        enabled = output.isNotBlank() && !isPlaying,
-                        onClick = { onFlashPressed() }
-                    )
-                    PlaybackButton(
-                        icon = Icons.Filled.Vibration,
-                        labelRes = R.string.play_vibrate,
-                        enabled = output.isNotBlank() && !isPlaying,
-                        onClick = { startPlayback(2) }
-                    )
-                    PlaybackButton(
-                        icon = Icons.Filled.GraphicEq,
-                        labelRes = R.string.play_all,
-                        enabled = output.isNotBlank() && !isPlaying,
-                        onClick = { startPlayback(3) }
-                    )
-                    if (isPlaying) {
-                        FilledIconButton(
-                            onClick = {
-                                player.stop()
-                                isPlaying = false
-                            }
-                        ) {
-                            Icon(
-                                Icons.Filled.Stop,
-                                contentDescription = stringResource(R.string.action_stop)
-                            )
-                        }
-                    }
-                }
-                // WPM presets
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    listOf(
-                        R.string.wpm_slow to 10,
-                        R.string.wpm_normal to 18,
-                        R.string.wpm_fast to 30
-                    ).forEach { (labelRes, value) ->
-                        FilterChip(
-                            selected = wpm == value,
-                            onClick = { scope.launch { repository.setWpm(value) } },
-                            label = { Text(stringResource(labelRes)) }
-                        )
-                    }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        stringResource(R.string.wpm, wpm),
-                        modifier = Modifier.width(110.dp),
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                    Slider(
-                        value = wpm.toFloat(),
-                        onValueChange = { scope.launch { repository.setWpm(it.toInt()) } },
-                        valueRange = 5f..40f,
-                        steps = 34,
-                        modifier = Modifier.weight(1f)
+                PlaybackGlassButton(
+                    icon = Icons.Filled.VolumeUp,
+                    label = stringResource(R.string.play_sound),
+                    enabled = output.isNotBlank() && !isPlaying,
+                    onClick = { startPlayback(0) }
+                )
+                PlaybackGlassButton(
+                    icon = Icons.Filled.FlashlightOn,
+                    label = stringResource(R.string.play_flash),
+                    enabled = output.isNotBlank() && !isPlaying,
+                    onClick = { onFlashPressed() }
+                )
+                PlaybackGlassButton(
+                    icon = Icons.Filled.Vibration,
+                    label = stringResource(R.string.play_vibrate),
+                    enabled = output.isNotBlank() && !isPlaying,
+                    onClick = { startPlayback(2) }
+                )
+                PlaybackGlassButton(
+                    icon = Icons.Filled.GraphicEq,
+                    label = stringResource(R.string.play_all),
+                    enabled = output.isNotBlank() && !isPlaying,
+                    onClick = { startPlayback(3) }
+                )
+            }
+            if (isPlaying) {
+                Spacer(Modifier.height(4.dp))
+                GlassPrimaryButton(
+                    text = stringResource(R.string.action_stop),
+                    onClick = {
+                        player.stop()
+                        isPlaying = false
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            // WPM presets
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                listOf(
+                    R.string.wpm_slow to 10,
+                    R.string.wpm_normal to 18,
+                    R.string.wpm_fast to 30
+                ).forEach { (labelRes, value) ->
+                    GlassChip(
+                        text = stringResource(labelRes),
+                        selected = wpm == value,
+                        onClick = { scope.launch { repository.setWpm(value) } }
                     )
                 }
             }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    stringResource(R.string.wpm, wpm),
+                    modifier = Modifier.width(110.dp),
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                Slider(
+                    value = wpm.toFloat(),
+                    onValueChange = { scope.launch { repository.setWpm(it.toInt()) } },
+                    valueRange = 5f..40f,
+                    steps = 34,
+                    modifier = Modifier.weight(1f),
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
         }
+
+        GlassBottomSpacer()
     }
 }
 
 @Composable
-private fun PlaybackButton(
-    icon: ImageVector,
-    labelRes: Int,
+private fun PlaybackGlassButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
     enabled: Boolean,
     onClick: () -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        FilledTonalIconButton(onClick = onClick, enabled = enabled) {
-            Icon(icon, contentDescription = stringResource(labelRes))
-        }
-        Text(stringResource(labelRes), style = MaterialTheme.typography.labelSmall)
+        GlassIconButton(
+            icon = icon,
+            description = label,
+            onClick = onClick,
+            enabled = enabled,
+            size = 60.dp
+        )
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium)
+        )
     }
 }
 
@@ -475,39 +471,32 @@ private fun MorseInputPad(
     onBackspace: () -> Unit,
     onTapDuration: (Long) -> Unit
 ) {
-    var pressing by remember { mutableStateOf(false) }
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedButton(onClick = onDot, modifier = Modifier.weight(1f)) {
-                Text("•", fontFamily = FontFamily.Monospace)
-            }
-            OutlinedButton(onClick = onDash, modifier = Modifier.weight(1f)) {
-                Text("▬", fontFamily = FontFamily.Monospace)
-            }
-            OutlinedButton(onClick = onLetterSpace, modifier = Modifier.weight(1f)) {
-                Text("␣", fontFamily = FontFamily.Monospace)
-            }
-            OutlinedButton(onClick = onWordSpace, modifier = Modifier.weight(1f)) {
-                Text("/", fontFamily = FontFamily.Monospace)
-            }
-            IconButton(onClick = onBackspace) {
-                Icon(Icons.AutoMirrored.Filled.Backspace, contentDescription = "⌫")
-            }
+            GlassChip(text = "•", onClick = onDot, modifier = Modifier.weight(1f))
+            GlassChip(text = "▬", onClick = onDash, modifier = Modifier.weight(1f))
+            GlassChip(text = "␣", onClick = onLetterSpace, modifier = Modifier.weight(1f))
+            GlassChip(text = "/", onClick = onWordSpace, modifier = Modifier.weight(1f))
+            GlassIconButton(
+                icon = Icons.AutoMirrored.Filled.Backspace,
+                description = "⌫",
+                onClick = onBackspace,
+                size = 48.dp
+            )
         }
-        Button(
+        GlassPrimaryButton(
+            text = stringResource(R.string.tap_pad_hint),
+            icon = Icons.Filled.TouchApp,
             onClick = { /* handled by the press detector below */ },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = {
-                            pressing = true
                             val start = System.currentTimeMillis()
                             val released = try {
                                 awaitRelease()
@@ -515,19 +504,10 @@ private fun MorseInputPad(
                             } catch (_: Exception) {
                                 false
                             }
-                            pressing = false
                             if (released) onTapDuration(System.currentTimeMillis() - start)
                         }
                     )
-                },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (pressing) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.secondaryContainer
-            )
-        ) {
-            Icon(Icons.Filled.TouchApp, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.tap_pad_hint))
-        }
+                }
+        )
     }
 }

@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2 (2026-10-09)
+
+### Liquid Glass redesign
+- Complete UI overhaul in the "liquid glass" style: animated aurora gradient backdrop,
+  frosted-glass cards with light refraction, floating glass bottom navigation and
+  gradient call-to-action buttons
+- Edge-to-edge layout with transparent system bars
+- Glass segmented controls, chips and icon buttons across Translate, Practice, Learn,
+  History and Settings screens
+
 ## 1.1 (2026-10-09)
 
 ### New features

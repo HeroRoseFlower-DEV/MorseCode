@@ -1,6 +1,10 @@
 package com.morsetranslator.app.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,26 +13,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.VolumeUp
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -42,8 +37,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.morsetranslator.app.R
@@ -51,6 +50,15 @@ import com.morsetranslator.app.data.SettingsRepository
 import com.morsetranslator.app.morse.MorseCode
 import com.morsetranslator.app.morse.MorsePlayer
 import com.morsetranslator.app.morse.PlaybackSettings
+import com.morsetranslator.app.ui.theme.GlassBottomSpacer
+import com.morsetranslator.app.ui.theme.GlassCard
+import com.morsetranslator.app.ui.theme.GlassChip
+import com.morsetranslator.app.ui.theme.GlassIconButton
+import com.morsetranslator.app.ui.theme.GlassPrimaryButton
+import com.morsetranslator.app.ui.theme.GlassSegmentedControl
+import com.morsetranslator.app.ui.theme.glassBorder
+import com.morsetranslator.app.ui.theme.glassContainer
+import com.morsetranslator.app.ui.theme.glassGradientBrush
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -69,7 +77,6 @@ fun PracticeScreen(repository: SettingsRepository, player: MorsePlayer) {
     var options by remember { mutableStateOf(shuffledOptions(target)) }
     var score by rememberSaveable { mutableStateOf(0) }
     var streak by rememberSaveable { mutableStateOf(0) }
-    var rounds by rememberSaveable { mutableStateOf(0) }
     var chosen by remember { mutableStateOf<Char?>(null) }
     var wasCorrect by remember { mutableStateOf<Boolean?>(null) }
     var tapInput by remember { mutableStateOf("") }
@@ -97,7 +104,6 @@ fun PracticeScreen(repository: SettingsRepository, player: MorsePlayer) {
 
     fun onResult(correct: Boolean) {
         if (wasCorrect != null) return // already answered this round
-        rounds++
         wasCorrect = correct
         if (correct) {
             score++
@@ -116,7 +122,6 @@ fun PracticeScreen(repository: SettingsRepository, player: MorsePlayer) {
         player.stop()
         score = 0
         streak = 0
-        rounds = 0
         nextRound()
     }
 
@@ -131,27 +136,29 @@ fun PracticeScreen(repository: SettingsRepository, player: MorsePlayer) {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // Score board
+        Spacer(Modifier.height(4.dp))
+
+        // Score board — glass pills
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            ScoreChip(
+            ScoreGlassChip(
                 icon = Icons.Filled.Star,
                 label = stringResource(R.string.practice_score),
                 value = score.toString(),
                 modifier = Modifier.weight(1f)
             )
-            ScoreChip(
+            ScoreGlassChip(
                 icon = Icons.Filled.LocalFireDepartment,
                 label = stringResource(R.string.practice_streak),
                 value = streak.toString(),
                 modifier = Modifier.weight(1f)
             )
-            ScoreChip(
+            ScoreGlassChip(
                 icon = Icons.Filled.EmojiEvents,
                 label = stringResource(R.string.practice_best),
                 value = best.toString(),
@@ -160,31 +167,21 @@ fun PracticeScreen(repository: SettingsRepository, player: MorsePlayer) {
         }
 
         // Mode selector
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FilterChip(
-                selected = mode == 0,
-                onClick = { mode = 0; reset() },
-                label = { Text(stringResource(R.string.practice_listen)) },
-                modifier = Modifier.weight(1f)
-            )
-            FilterChip(
-                selected = mode == 1,
-                onClick = { mode = 1; reset() },
-                label = { Text(stringResource(R.string.practice_tap)) },
-                modifier = Modifier.weight(1f)
-            )
-        }
+        GlassSegmentedControl(
+            options = listOf(
+                stringResource(R.string.practice_listen),
+                stringResource(R.string.practice_tap)
+            ),
+            selected = mode,
+            onSelect = { mode = it; reset() },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         if (mode == 0) {
             // ---- Listen mode ----
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -195,47 +192,52 @@ fun PracticeScreen(repository: SettingsRepository, player: MorsePlayer) {
                     )
                     Text(
                         "?",
-                        style = MaterialTheme.typography.displayLarge,
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            fontWeight = FontWeight.ExtraBold
+                        ),
                         color = MaterialTheme.colorScheme.primary
                     )
-                    OutlinedButton(onClick = { playTarget() }) {
-                        Icon(Icons.Filled.VolumeUp, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.practice_replay))
-                    }
+                    GlassChip(
+                        text = stringResource(R.string.practice_replay),
+                        onClick = { playTarget() }
+                    )
                 }
             }
 
-            // Options grid (2x2)
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Options grid (2x2) — glass answer tiles
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 options.chunked(2).forEach { row ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         row.forEach { char ->
                             val isChosen = chosen == char
-                            val containerColor = when {
-                                wasCorrect == true && isChosen -> MaterialTheme.colorScheme.primary
-                                wasCorrect == false && isChosen -> MaterialTheme.colorScheme.error
-                                else -> MaterialTheme.colorScheme.secondaryContainer
+                            val tileColor = when {
+                                wasCorrect == true && isChosen ->
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+                                wasCorrect == false && isChosen ->
+                                    MaterialTheme.colorScheme.error.copy(alpha = 0.35f)
+                                else -> glassContainer()
                             }
-                            Button(
-                                onClick = {
-                                    chosen = char
-                                    onResult(char == target)
-                                },
-                                enabled = wasCorrect == null,
+                            Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(64.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = containerColor
-                                )
+                                    .height(72.dp)
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(tileColor)
+                                    .border(1.dp, glassBorder(), RoundedCornerShape(20.dp))
+                                    .clickable(enabled = wasCorrect == null) {
+                                        chosen = char
+                                        onResult(char == target)
+                                    },
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     char.toString(),
-                                    style = MaterialTheme.typography.headlineSmall
+                                    style = MaterialTheme.typography.headlineMedium.copy(
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 )
                             }
                         }
@@ -244,13 +246,11 @@ fun PracticeScreen(repository: SettingsRepository, player: MorsePlayer) {
             }
         } else {
             // ---- Tap mode ----
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
                         stringResource(R.string.practice_tap_hint),
@@ -259,20 +259,16 @@ fun PracticeScreen(repository: SettingsRepository, player: MorsePlayer) {
                     )
                     Text(
                         target.toString(),
-                        style = MaterialTheme.typography.displayLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        expected,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = FontFamily.Monospace
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            fontWeight = FontWeight.ExtraBold
                         ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         tapInput.ifBlank { "…" },
                         style = MaterialTheme.typography.headlineMedium.copy(
-                            fontFamily = FontFamily.Monospace
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
                         ),
                         color = when (wasCorrect) {
                             true -> MaterialTheme.colorScheme.primary
@@ -287,89 +283,112 @@ fun PracticeScreen(repository: SettingsRepository, player: MorsePlayer) {
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedButton(
-                    onClick = { if (wasCorrect == null) tapInput += "." },
-                    modifier = Modifier.weight(1f),
-                    enabled = wasCorrect == null
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            if (wasCorrect == null) glassGradientBrush()
+                            else glassContainer()
+                        )
+                        .clickable(enabled = wasCorrect == null) { tapInput += "." }
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("•", fontFamily = FontFamily.Monospace)
+                    Text(
+                        "•",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontFamily = FontFamily.Monospace,
+                        color = if (wasCorrect == null) Color.White
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                    )
                 }
-                OutlinedButton(
-                    onClick = { if (wasCorrect == null) tapInput += "-" },
-                    modifier = Modifier.weight(1f),
-                    enabled = wasCorrect == null
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            if (wasCorrect == null) glassGradientBrush()
+                            else glassContainer()
+                        )
+                        .clickable(enabled = wasCorrect == null) { tapInput += "-" }
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("▬", fontFamily = FontFamily.Monospace)
+                    Text(
+                        "▬",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontFamily = FontFamily.Monospace,
+                        color = if (wasCorrect == null) Color.White
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                    )
                 }
-                IconButton(
+                GlassIconButton(
+                    icon = Icons.AutoMirrored.Filled.Backspace,
+                    description = "⌫",
                     onClick = { if (tapInput.isNotEmpty()) tapInput = tapInput.dropLast(1) },
-                    enabled = wasCorrect == null
-                ) {
-                    Icon(Icons.AutoMirrored.Filled.Backspace, contentDescription = "⌫")
-                }
+                    enabled = wasCorrect == null,
+                    size = 52.dp
+                )
             }
 
-            Button(
+            GlassPrimaryButton(
+                text = stringResource(R.string.practice_check),
+                icon = Icons.Filled.Check,
                 onClick = { onResult(tapInput == expected && tapInput.isNotEmpty()) },
                 enabled = wasCorrect == null && tapInput.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Filled.Check, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.practice_check))
-            }
+            )
         }
 
         // Reset
-        OutlinedButton(
-            onClick = { reset() },
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
         ) {
-            Icon(Icons.Filled.Refresh, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.action_reset))
+            GlassChip(
+                text = stringResource(R.string.action_reset),
+                onClick = { reset() }
+            )
         }
+
+        GlassBottomSpacer()
     }
 }
 
 @Composable
-private fun ScoreChip(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+private fun ScoreGlassChip(
+    icon: ImageVector,
     label: String,
     value: String,
     modifier: Modifier = Modifier
 ) {
-    ElevatedCard(
-        modifier = modifier,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(glassContainer())
+            .border(1.dp, glassBorder(), RoundedCornerShape(20.dp))
+            .padding(vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
-            Text(
-                value,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-            Text(
-                label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-        }
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            value,
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+        )
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

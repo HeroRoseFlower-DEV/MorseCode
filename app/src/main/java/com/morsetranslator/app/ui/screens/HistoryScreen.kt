@@ -1,6 +1,5 @@
 package com.morsetranslator.app.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,23 +9,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -40,10 +36,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.morsetranslator.app.R
 import com.morsetranslator.app.data.SettingsRepository
+import com.morsetranslator.app.ui.theme.GlassBottomSpacer
+import com.morsetranslator.app.ui.theme.GlassCard
+import com.morsetranslator.app.ui.theme.GlassChip
+import com.morsetranslator.app.ui.theme.GlassIconButton
+import com.morsetranslator.app.ui.theme.glassBorder
+import com.morsetranslator.app.ui.theme.glassContainer
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
@@ -92,16 +95,26 @@ fun HistoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        Spacer(Modifier.height(4.dp))
+
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(stringResource(R.string.history_search_hint)) },
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-            singleLine = true
+            singleLine = true,
+            shape = RoundedCornerShape(20.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = glassContainer(),
+                unfocusedContainerColor = glassContainer(),
+                disabledContainerColor = glassContainer(),
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = glassBorder()
+            )
         )
 
         if (history.isNotEmpty()) {
@@ -109,11 +122,10 @@ fun HistoryScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = { showConfirm = true }) {
-                    Icon(Icons.Filled.DeleteSweep, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.history_clear_all))
-                }
+                GlassChip(
+                    text = stringResource(R.string.history_clear_all),
+                    onClick = { showConfirm = true }
+                )
             }
         }
 
@@ -132,7 +144,7 @@ fun HistoryScreen(
                 Spacer(Modifier.height(16.dp))
                 Text(
                     stringResource(R.string.history_empty),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 Text(
                     stringResource(R.string.history_empty_hint),
@@ -143,18 +155,15 @@ fun HistoryScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(filtered, key = { it.id }) { item ->
-                    ElevatedCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onSelect(item.input, item.textToMorse) }
+                    GlassCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { onSelect(item.input, item.textToMorse) }
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(
@@ -165,16 +174,13 @@ fun HistoryScreen(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    AssistChip(
+                                    GlassChip(
+                                        text = stringResource(
+                                            if (item.textToMorse) R.string.dir_text_to_morse
+                                            else R.string.dir_morse_to_text
+                                        ),
                                         onClick = { },
-                                        label = {
-                                            Text(
-                                                stringResource(
-                                                    if (item.textToMorse) R.string.dir_text_to_morse
-                                                    else R.string.dir_morse_to_text
-                                                )
-                                            )
-                                        }
+                                        selected = true
                                     )
                                     Text(
                                         DateFormat
@@ -188,7 +194,9 @@ fun HistoryScreen(
                                     item.input,
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Medium
+                                    ),
                                     fontFamily = if (!item.textToMorse) FontFamily.Monospace
                                     else FontFamily.Default
                                 )
@@ -202,27 +210,23 @@ fun HistoryScreen(
                                     else FontFamily.Default
                                 )
                             }
-                            IconButton(
-                                onClick = { scope.launch { repository.toggleFavorite(item.id) } }
-                            ) {
-                                Icon(
-                                    if (item.isFavorite) Icons.Filled.Star else Icons.Outlined.Star,
-                                    contentDescription = stringResource(R.string.action_favorite),
-                                    tint = if (item.isFavorite) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            IconButton(
-                                onClick = { scope.launch { repository.removeHistory(item.id) } }
-                            ) {
-                                Icon(
-                                    Icons.Filled.Delete,
-                                    contentDescription = stringResource(R.string.history_delete)
-                                )
-                            }
+                            GlassIconButton(
+                                icon = if (item.isFavorite) Icons.Filled.Star else Icons.Outlined.Star,
+                                description = stringResource(R.string.action_favorite),
+                                onClick = { scope.launch { repository.toggleFavorite(item.id) } },
+                                selected = item.isFavorite,
+                                size = 44.dp
+                            )
+                            GlassIconButton(
+                                icon = Icons.Filled.Delete,
+                                description = stringResource(R.string.history_delete),
+                                onClick = { scope.launch { repository.removeHistory(item.id) } },
+                                size = 44.dp
+                            )
                         }
                     }
                 }
+                item { GlassBottomSpacer() }
             }
         }
     }

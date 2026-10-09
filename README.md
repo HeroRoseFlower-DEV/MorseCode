@@ -18,6 +18,8 @@ A minimal, modern Android Morse code translator built with Kotlin and Jetpack Co
 - **History** — last 100 translations with full-text search and favorites, tap to reload,
   delete, clear-all with confirmation
 - **Theming** — Material 3 dynamic colors, light / dark / system modes, full RTL support
+- **Liquid Glass UI** — animated aurora backdrop, frosted-glass cards, floating glass
+  navigation and gradient buttons, edge-to-edge on both themes
 - **Bilingual UI** — English and Persian (فارسی)
 
 See [CHANGELOG.md](CHANGELOG.md) for version history and [PRIVACY_POLICY.md](PRIVACY_POLICY.md)
